@@ -13,8 +13,14 @@ import './assets/css/novoTweet.css'
 // import './index.css';
 
 
-import App from './App';
+import Roteamento from './routes'
+import {BrowserRouter} from 'react-router-dom'
 import registerServiceWorker from './registerServiceWorker';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(
+    <BrowserRouter>
+        <Roteamento/>
+    </BrowserRouter>
+    , document.getElementById('root'));
+
 registerServiceWorker();
