@@ -18,17 +18,46 @@ class App extends Component {
         this.adicionarTweet = this.adicionarTweet.bind(this)
     }
 
+    componentDidMount(){
+        fetch(`http://localhost:3001/tweets?X-AUTH-TOKEN=${localStorage.getItem('TOKEN')}`)
+        .then((respostaDoServer)=>{
+            if(!respostaDoServer.ok){
+                throw new Error()
+            }
+            return respostaDoServer.json()
+        })
+        .then((tweets)=>{
+            this.setState({tweets: tweets})
+        })
+        .catch((erro)=>{})
+    }
+
     adicionarTweet(evento){
         evento.preventDefault()
 
-        this.setState({tweets: [this.state.novoTweet ,...this.state.tweets]})
+        const novoTweet = this.state.novoTweet
+
+        if(novoTweet){
+            fetch(`http://localhost:3001/tweets?X-AUTH-TOKEN=${localStorage.getItem('TOKEN')}`,
+            {
+                method: 'POST',
+                body: JSON.stringify({conteudo: novoTweet})
+            })
+            .then((respostaDoServer)=>{
+                return respostaDoServer.json()
+            })
+            .then((tweetDoServer)=>{
+                this.setState({tweets: [tweetDoServer,...this.state.tweets]})
+                this.setState({novoTweet: ''})
+            })
+        }
     }
 
     render() {
         return (
             <Fragment>
             <Cabecalho>
-                <NavMenu usuario="@omariosouto" />
+                <NavMenu usuario={localStorage.getItem('login')} />
             </Cabecalho>
             <div className="container">
                 <Dashboard>
@@ -59,7 +88,10 @@ class App extends Component {
                 <Dashboard posicao="centro">
                     <Widget>
                         <div className="tweetsArea">
-                            {this.state.tweets.map((tweet)=> <Tweet key={tweet} texto={tweet}/>)}                           
+                            {this.state.tweets.map((tweet)=> <Tweet key={tweet._id} tweetInfo={tweet}/>)}
+                            {this.state.tweets.length === 0?
+                                'Compartilhe seus pensamentos!':''
+                            }                          
                         </div>
                     </Widget>
                 </Dashboard>

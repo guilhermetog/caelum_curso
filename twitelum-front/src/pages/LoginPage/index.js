@@ -8,7 +8,7 @@ class LoginPage extends Component {
     constructor(){
         super()
         this.state = {
-            erro: ''
+            erroMsg: ''
         }
 
         this.enviarLogin = this.enviarLogin.bind(this)
@@ -29,14 +29,22 @@ class LoginPage extends Component {
             body: JSON.stringify(infosDoUsuario),
         },)
         .then((respostaDoServer) => { 
+            if(!respostaDoServer.ok){
+                this.setState({erro: true})
+            }else{
+                this.setState({erro: false})
+            }
             return respostaDoServer.json()
         })
         .then((respostaPronta)=>{
-            localStorage.setItem("TOKEN", respostaPronta.token)
-        })
-        .catch((msg)=> {
-            console.log(msg)
-            //this.setState({erro: msg})
+            if(this.state.erro){
+                this.setState({erroMsg: respostaPronta.message})
+            }
+            else{
+                localStorage.setItem("TOKEN", respostaPronta.token)
+                localStorage.setItem("login",login)
+                this.props.history.push('/')
+            }
         })
     }
 
@@ -63,9 +71,9 @@ class LoginPage extends Component {
                                         ref={(inputSenha)=>{this.inputSenha = inputSenha}}
                                         name="senha"/>
                             </div>
-                            {(this.state.error !== '')? '': <div className="loginPage__errorBox">
-                                this.state.error
-                             </div>}
+                            {this.state.erro? <div className="loginPage__errorBox">
+                                {this.state.erroMsg}
+                             </div>:''}
                             <div className="loginPage__inputWrap">
                                 <button className="loginPage__btnLogin" type="submit">
                                     Logar
