@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import './tweet.css'
 
 class Tweet extends Component {
@@ -10,21 +11,24 @@ class Tweet extends Component {
             totalLikes : props.tweetInfo.totalLikes
         }
 
-        this.addLike = this.addLike.bind(this)
+        this.handleLike = this.handleLike.bind(this)
     }
 
-    addLike(){
-        if(this.state.likeado){
-            this.setState({likeado: false})
-            this.setState({totalLikes: this.state.totalLikes - 1})
-        }else{
-            this.setState({likeado: true})
-            this.setState({totalLikes: this.state.totalLikes + 1})
-        }
+    handleLike(tweetID){
+
+        const {likeado, totalLikes} = this.state
+        this.setState({
+            likeado: !likeado,
+            totalLikes: likeado ? totalLikes - 1: totalLikes + 1
+        })
+
+        fetch(`http://localhost:3001/tweets/${tweetID}/like?X-AUTH-TOKEN=${localStorage.getItem('TOKEN')}`,{
+                method: 'POST'})
+        
     }
     render() {
         return (
-            <article className="tweet">
+            <article className="tweet" onClick={this.props.abreModalHandler}>
                 <div className="tweet__cabecalho">
                     <img className="tweet__fotoUsuario" src={this.props.tweetInfo.usuario.foto} alt="" />
                     <span className="tweet__nomeUsuario">{this.props.tweetInfo.usuario.nome} {this.props.tweetInfo.usuario.sobrenome}</span>
@@ -34,7 +38,7 @@ class Tweet extends Component {
                     {this.props.tweetInfo.conteudo}
                 </p>
                 <footer className="tweet__footer">
-                    <button className="btn btn--clean" onClick={this.addLike}>
+                    <button className="btn btn--clean" onClick={(event)=>{ this.handleLike(this.props.tweetInfo._id)}}>
                         <svg className={`icon icon--small iconHeart${this.state.likeado ? '--active':'' }`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 47.5 47.5">
                             <defs>
                                 <clipPath id="a">
@@ -47,10 +51,38 @@ class Tweet extends Component {
                         </svg>
                         {this.state.totalLikes}
                     </button>
+                    { this.props.tweetInfo.removivel ?
+                        <button onClick={this.props.removeHandler} className="btn btn--blue btn--remove">
+                            x
+                        </button>
+                    :''}
+                    {this.props.tweetInModal &&
+                        <div className='tweet__likeadores'>
+                            {
+                                this.props.tweetInfo.likes.map((liker)=>`@${liker.usuario.login}`)
+                            }
+                        </div>
+                    }
                 </footer>
             </article>
         )
     }
+}
+
+Tweet.propTypes = {
+    removeHandler: PropTypes.func.isRequired,
+    tweetInfo: PropTypes.shape({
+        _id: PropTypes.string,
+        likeado: PropTypes.bool,
+        totalLikes: PropTypes.number,
+        usuario: PropTypes.shape({
+            foto: PropTypes.string,
+            nome: PropTypes.string,
+            sobrenome: PropTypes.string,
+            login: PropTypes.string
+        })
+    }).isRequired,
+    abreModalHandler: PropTypes.func
 }
 
 export default Tweet
