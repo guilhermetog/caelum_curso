@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import PropTypes from 'prop-types'
 import Cabecalho from '../../components/Cabecalho'
 import NavMenu from '../../components/NavMenu'
 import Dashboard from '../../components/Dashboard'
@@ -7,7 +8,7 @@ import TrendsArea from '../../components/TrendsArea'
 import Tweet from '../../components/Tweet'
 import Modal from '../../components/Modal';
 
-class App extends Component {
+class Home extends Component {
     constructor(){
         super()
         
@@ -21,6 +22,14 @@ class App extends Component {
         this.removerTweet = this.removerTweet.bind(this)
     }
 
+    componentWillMount(){
+        this.context.store.subscribe(()=>{
+            this.setState({
+                tweets : window.store.getState()
+            })
+        })
+    }
+
     componentDidMount(){
         fetch(`http://localhost:3001/tweets?X-AUTH-TOKEN=${localStorage.getItem('TOKEN')}`)
         .then((respostaDoServer)=>{
@@ -29,8 +38,8 @@ class App extends Component {
             }
             return respostaDoServer.json()
         })
-        .then((tweets)=>{
-            this.setState({tweets: tweets})
+        .then((tweetsDoServidor)=>{
+            this.context.store.dispatch({type:'CARREGA_TWEETS', tweets: tweetsDoServidor})
         })
         .catch((erro)=>{})
     }
@@ -62,14 +71,13 @@ class App extends Component {
         })
         .then((respostaDoServer)=>{
             if(respostaDoServer.ok){
-              this.setState({tweets: this.state.tweets.filter(t => t._id !== tweet)})
+              this.setState({tweets: this.state.tweets.filter(t => t._id !== tweet),
+                             tweetAtivo: {}})
             }
         })
     }
 
     abreModalparaTweet = (event, IDTweetSelecionado) => {
-
-        console.log(event.target)
         if(event.target.closest('.tweet__footer')){
             return false
         }
@@ -79,10 +87,11 @@ class App extends Component {
         })
     }
 
-    fechaModal = () => {
-        this.setState({
-            tweetAtivo: {}
-        })
+    fechaModal = (event) => {
+        event.target.closest('.tweet') ||
+            this.setState({
+                tweetAtivo: {}
+            })
     }
 
     render() {
@@ -146,4 +155,8 @@ class App extends Component {
     }
 }
 
-export default App;
+Home.contextTypes = {
+    store: PropTypes.object.isRequired
+}
+
+export default Home;
