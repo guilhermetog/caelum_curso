@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import * as TweetsAPI from '../../apis/TweetsAPI'
 import './tweet.css'
 
 class Tweet extends Component {
@@ -13,6 +14,13 @@ class Tweet extends Component {
 
         this.handleLike = this.handleLike.bind(this)
     }
+
+    removerTweet(tweet){
+        this.context.store.dispatch(TweetsAPI.remove(tweet))
+        this.setState({
+            tweetAtivo: {}
+        })
+      }
 
     handleLike(tweetID){
 
