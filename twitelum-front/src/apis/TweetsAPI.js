@@ -26,6 +26,9 @@ export const adiciona = (novoTweet) =>{
         })
         .then((tweetDoServer)=>{
             dispatch({type: 'ADICIONA_TWEET', tweet: tweetDoServer})
+
+            dispatch({type: 'ADD_NOTIFICACAO', notificacao: 'Tweet adicionado com sucesso!'})
+            setTimeout(()=>{dispatch({type: 'REMOVE_NOTIFICACAO'})}, 2000)
         })
     }
 }
@@ -39,6 +42,21 @@ export const remove = (tweet) =>{
             return respostaDoServer.json()
         }).then((tweetDoServer)=>{
             dispatch({type: 'REMOVE_TWEET', id: tweet})
+            dispatch({type: 'REMOVE_TWEET_ATIVO'})
+
+            dispatch({type: 'ADD_NOTIFICACAO', notificacao: 'Tweet removido com sucesso!'})
+            setTimeout(()=>{dispatch({type: 'REMOVE_NOTIFICACAO'})}, 2000)
+        })
+    }
+}
+
+export const like = (tweetID, liker) =>{
+    return (dispatch) =>{
+        fetch(`http://localhost:3001/tweets/${tweetID}/like?X-AUTH-TOKEN=${localStorage.getItem('TOKEN')}`,
+            {method: 'POST'})
+        .then(resposta => resposta.json())
+        .then(resposta => {
+            dispatch({type: 'LIKE', tweetID, liker: resposta.liker})
         })
     }
 }

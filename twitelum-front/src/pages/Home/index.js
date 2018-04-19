@@ -26,8 +26,9 @@ class Home extends Component {
         TweetsAPI.carrega()
         this.context.store.subscribe(()=>{
             this.setState({
-                tweets : this.context.store.getState(),
-                novoTweet: ''
+                tweets : this.context.store.getState().tweets.lista,
+                novoTweet: '',
+                tweetAtivo: this.context.store.getState().tweets.tweetAtivo
             })
         })
     }
@@ -47,17 +48,14 @@ class Home extends Component {
         if(event.target.closest('.tweet__footer')){
             return false
         }
+        
+        this.context.store.dispatch({type:'ADICIONA_TWEET_ATIVO', tweet: IDTweetSelecionado})
 
-        this.setState({
-            tweetAtivo: this.state.tweets.find(tweet => tweet._id === IDTweetSelecionado)
-        })
     }
 
     fechaModal = (event) => {
         event.target.closest('.tweet') ||
-            this.setState({
-                tweetAtivo: {}
-            })
+            this.context.store.dispatch({type: 'REMOVE_TWEET_ATIVO'})
     }
 
     render() {
@@ -113,6 +111,12 @@ class Home extends Component {
                                    removeHandler={(event)=>this.removerTweet(this.state.tweetAtivo._id)}/>
                         </Widget>
                     </Modal>
+                    {
+                        this.context.store.getState().notificacao &&
+                            <div className="notificacaoMsg">
+                                {this.context.store.getState().notificacao}
+                            </div>
+                    }
                 </Dashboard>
             </div>
             </Fragment>
